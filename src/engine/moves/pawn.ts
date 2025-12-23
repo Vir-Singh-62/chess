@@ -1,10 +1,11 @@
 import { inBounds } from "../../helpers/board";
 import { getPieceColor } from "../../helpers/piece";
-import { ChessBoard } from "../../socket/handlers/gamePlay";
+import { ChessBoard, gameInfos } from "../../socket/handlers/gamePlay";
 
 export function pawnMoves(
   board: ChessBoard,
-  from: { x: number; y: number }
+  from: { x: number; y: number },
+  roomId?: number
 ): { x: number; y: number }[] {
   const moves: { x: number; y: number }[] = [];
   const piece = board[from.y][from.x];
@@ -48,6 +49,25 @@ export function pawnMoves(
       const targetPiece = board[captureY][captureX];
       if (targetPiece && getPieceColor(targetPiece) !== pieceColor) {
         moves.push({ x: captureX, y: captureY });
+      }
+    }
+  }
+
+  // En passant captures
+  if (roomId !== undefined) {
+    const gameInfo = gameInfos.get(roomId);
+    if (gameInfo && gameInfo.enPassantTarget) {
+      const target = gameInfo.enPassantTarget;
+
+      // Check if the pawn can perform an en passant capture
+      if (
+        target.y === from.y &&
+        (target.x === from.x - 1 || target.x === from.x + 1)
+      ) {
+        // The en passant target is on the same rank as the pawn
+        // The destination is where the pawn would land after capturing
+        const enPassantY = from.y + direction;
+        moves.push({ x: target.x, y: enPassantY });
       }
     }
   }
