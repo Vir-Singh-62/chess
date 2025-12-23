@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { parse, send } from "..";
-import { chessBoards, getNewChessBoard, sendBoard } from "./gamePlay";
+import { sendBoard, initializeGame, gameInfos } from "./gamePlay";
 
 export const rooms = new Map<
   number,
@@ -16,7 +16,8 @@ export function handleRoomCreation(ws: WebSocket, raw: string) {
   if (!data.color) {
     data.color = "white";
   }
-  const board = chessBoards.set(roomId, getNewChessBoard());
+  initializeGame(roomId);
+  const board = gameInfos.get(roomId)?.board;
 
   if (data.color === "white") {
     whites.set(ws, roomId);
